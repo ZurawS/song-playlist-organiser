@@ -4,5 +4,10 @@ import router from "./router";
 
 //global styles
 import "./assets/main.css";
+import { projectAuth } from "./firebase/config";
 
-createApp(App).use(router).mount("#app");
+let app = null;
+
+projectAuth.onAuthStateChanged(() => {
+  if (!app) app = createApp(App).use(router).mount("#app");
+});
