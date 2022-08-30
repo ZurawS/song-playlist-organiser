@@ -6,3 +6,6 @@ service firebase.storage {
     }
   }
 }
+
+//redeploy storage rules
+//firebase deploy --only storage
