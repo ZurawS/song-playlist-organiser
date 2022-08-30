@@ -1,4 +1,5 @@
 # song-playlist-organiser
+You can check how it currently works here: https://song-playlist-organiser.web.app
 
 ## Project setup
 ```
