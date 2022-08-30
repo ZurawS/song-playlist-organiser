@@ -11,3 +11,7 @@ let app = null;
 projectAuth.onAuthStateChanged(() => {
   if (!app) app = createApp(App).use(router).mount("#app");
 });
+
+//In order to deploy use:
+//yarn run build
+//firebase deploy

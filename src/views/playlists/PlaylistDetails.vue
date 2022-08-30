@@ -1,51 +1,70 @@
 <template>
   <div class="error" v-if="error">{{ error }}</div>
   <div v-if="playlist" class="playlist-details">
+    <!-- playlist information -->
     <div class="playlist-info">
       <div class="cover">
-        <img :src="playlist.url" alt="" />
+        <img :src="playlist.url" />
       </div>
       <h2>{{ playlist.title }}</h2>
       <p class="username">Created by {{ playlist.userName }}</p>
       <p class="description">{{ playlist.description }}</p>
-      <button v-if="ownership" @click="handleDelete">Delete playlist</button>
+      <button v-if="ownership" @click="handleDelete">Delete Playlist</button>
     </div>
 
+    <!-- song list -->
     <div class="song-list">
-      <p>Songs</p>
+      <div v-if="!playlist.songs.length">
+        No songs have been added to this playlist yet.
+      </div>
+      <div v-for="song in playlist.songs" :key="song.id" class="single-song">
+        <div class="details">
+          <h3>{{ song.title }}</h3>
+          <p>{{ song.artist }}</p>
+        </div>
+        <button v-if="ownership" @click="handleClick(song.id)">Delete</button>
+      </div>
+      <AddNewSong :playlist="playlist" />
     </div>
   </div>
 </template>
 
 <script>
+import AddNewSong from "../../components/AddNewSong.vue";
+import useStorage from "@/composables/useStorage";
+import useDocument from "@/composables/useDocument";
 import getDocument from "@/composables/getDocument";
 import getUser from "@/composables/getUser";
-import useDocument from "@/composables/useDocument";
-import useStorage from "@/composables/useStorage";
-import { computed } from "@vue/runtime-core";
+import { computed } from "vue";
 import { useRouter } from "vue-router";
 
 export default {
   props: ["id"],
+  components: { AddNewSong },
 
   setup(props) {
     const { error, document: playlist } = getDocument("playlists", props.id);
     const { user } = getUser();
-    const { deleteDoc } = useDocument("playlists", props.id);
+    const { deleteDoc, updateDoc } = useDocument("playlists", props.id);
     const { deleteImage } = useStorage();
     const router = useRouter();
-
-    const ownership = computed(
-      () => playlist.value && user && playlist.value.userId === user.value.uid
-    );
+    const ownership = computed(() => {
+      return (
+        playlist.value && user.value && user.value.uid == playlist.value.userId
+      );
+    });
 
     const handleDelete = async () => {
-      await deleteImage(playlist.value.filePath);
       await deleteDoc();
+      await deleteImage(playlist.value.filePath);
       router.push({ name: "Home" });
     };
 
-    return { error, playlist, ownership, handleDelete };
+    const handleClick = async (id) => {
+      const songs = playlist.value.songs.filter((song) => song.id != id);
+      await updateDoc({ songs });
+    };
+    return { error, playlist, ownership, handleDelete, handleClick };
   },
 };
 </script>
